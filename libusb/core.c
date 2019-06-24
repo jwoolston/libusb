@@ -39,6 +39,8 @@
 
 #ifdef __ANDROID__
 #include <android/log.h>
+#include <common.h>
+
 #endif
 
 #include "libusbi.h"
@@ -2519,6 +2521,14 @@ static void usbi_log_str(enum libusb_log_level level, const char *str)
 	if (MultiByteToWideChar(CP_UTF8, 0, str, -1, wbuf, sizeof(wbuf)) != 0)
 		OutputDebugStringW(wbuf);
 #endif
+#elif defined(JNI_WRAPPER)
+	switch (level) {
+		case LIBUSB_LOG_LEVEL_NONE: return;
+		case LIBUSB_LOG_LEVEL_ERROR: __arbor_error("libusb", str); break;
+		case LIBUSB_LOG_LEVEL_WARNING: __arbor_warn("libusb", str); break;
+		case LIBUSB_LOG_LEVEL_INFO: __arbor_info("libusb", str); break;
+		case LIBUSB_LOG_LEVEL_DEBUG: __arbor_debug("libusb", str); break;
+	}
 #elif defined(__ANDROID__)
 	int priority = ANDROID_LOG_UNKNOWN;
 	switch (level) {
